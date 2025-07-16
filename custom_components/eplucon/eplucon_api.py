@@ -20,7 +20,9 @@ class EpluconAuthError(Exception):
 
 
 class EpluconConnectionError(Exception):
-    """Exception to indicate connection failure."""
+    """Exception to indicate conn                        _LOGGER.info(f"Found 32-char hex patterns: {hex_32_patterns}")
+                        self._account_module_index = hex_32_patterns[0]
+                        _LOGGER.info(f"Using account_module_index: {self._account_module_index}")ion failure."""
 
 
 class EpluconAPI:
@@ -34,11 +36,8 @@ class EpluconAPI:
         self.is_authenticated = False
         self._account_module_index: str | None = None
         
-        # Test logging levels
-        _LOGGER.error("🔴 ERROR: Eplucon API initialized")
-        _LOGGER.warning("🟡 WARNING: Eplucon API initialized")
-        _LOGGER.info("🔵 INFO: Eplucon API initialized")
-        _LOGGER.debug("🟢 DEBUG: Eplucon API initialized")
+        # Initialize the API client
+        _LOGGER.debug("Eplucon API initialized")
 
     async def _ensure_session(self) -> aiohttp.ClientSession:
         """Ensure we have an active session."""
@@ -53,23 +52,23 @@ class EpluconAPI:
 
     async def login(self) -> bool:
         """Login to Eplucon portal."""
-        _LOGGER.error("🔴 STARTING LOGIN PROCESS")  # Using ERROR level to ensure visibility
+        _LOGGER.info("Starting login process")
         session = await self._ensure_session()
         
         try:
             # First, get the login page to extract CSRF token
             login_url = f"{EPLUCON_BASE_URL}{LOGIN_ENDPOINT}"
-            _LOGGER.error(f"🔴 Attempting to load login page: {login_url}")
+            _LOGGER.debug(f"Attempting to load login page: {login_url}")
             
             async with session.get(login_url) as response:
-                _LOGGER.error(f"🔴 Login page response status: {response.status}")
+                _LOGGER.debug(f"Login page response status: {response.status}")
                 _LOGGER.debug(f"Login page response headers: {dict(response.headers)}")
                 
                 if response.status != 200:
                     raise EpluconConnectionError(f"Failed to load login page: {response.status}")
                 
                 login_page_content = await response.text()
-                _LOGGER.error(f"🔴 Login page content length: {len(login_page_content)} characters")
+                _LOGGER.debug(f"Login page content length: {len(login_page_content)} characters")
                 
                 # Parse the login page first
                 try:
@@ -94,16 +93,16 @@ class EpluconAPI:
                 token_input = soup.find('input', {'name': '_token'})
                 if token_input:
                     csrf_token = token_input.get('value')
-                    _LOGGER.error("🔴 Found CSRF token in login form")
+                    _LOGGER.debug("Found CSRF token in login form")
                 else:
-                    _LOGGER.error("🔴 No CSRF token found in login form")
+                    _LOGGER.debug("No CSRF token found in login form")
                     # Try alternative token field names
                     alt_tokens = ['csrf_token', 'authenticity_token', 'token']
                     for token_name in alt_tokens:
                         token_input = soup.find('input', {'name': token_name})
                         if token_input:
                             csrf_token = token_input.get('value')
-                            _LOGGER.error(f"🔴 Found alternative token field: {token_name}")
+                            _LOGGER.debug(f"Found alternative token field: {token_name}")
                             break
                 
                 if not csrf_token:
@@ -119,18 +118,18 @@ class EpluconAPI:
                     'username': self.email,
                     'password': self.password,
                 }
-                _LOGGER.error(f"🔴 Prepared login form data with fields: {list(form_data.keys())}")
+                _LOGGER.debug(f"Prepared login form data with fields: {list(form_data.keys())}")
 
             # Submit login form
-            _LOGGER.error(f"🔴 Submitting login form to: {login_url}")
+            _LOGGER.debug(f"Submitting login form to: {login_url}")
             async with session.post(login_url, data=form_data, allow_redirects=True) as response:
-                _LOGGER.error(f"🔴 Login form submission response status: {response.status}")
+                _LOGGER.debug(f"Login form submission response status: {response.status}")
                 _LOGGER.debug(f"Login response headers: {dict(response.headers)}")
-                _LOGGER.error(f"🔴 Final URL after redirects: {response.url}")
+                _LOGGER.debug(f"Final URL after redirects: {response.url}")
                 
                 if response.status == 200:
                     response_text = await response.text()
-                    _LOGGER.error(f"🔴 Login response content length: {len(response_text)} characters")
+                    _LOGGER.debug(f"Login response content length: {len(response_text)} characters")
                     
                     # Log login response structure for debugging
                     _LOGGER.debug(f"Login response contains: forms={len(BeautifulSoup(response_text, 'html.parser').find_all('form'))}")
@@ -158,7 +157,7 @@ class EpluconAPI:
                         _LOGGER.info("Login appears successful based on page content indicators")
                         
                         # Navigate directly to heatpump page to find the account_module_index
-                        _LOGGER.error("🔴 Navigating to heatpump page to find account_module_index")
+                        _LOGGER.debug("Navigating to heatpump page to find account_module_index")
                         await self._find_module_index_from_heatpump_page(session)
                         
                         return True
@@ -192,21 +191,21 @@ class EpluconAPI:
 
     async def get_heat_pump_data(self) -> Dict[str, Any]:
         """Fetch heat pump data from Eplucon portal."""
-        _LOGGER.error("🔴 === Starting heat pump data retrieval ===")
+        _LOGGER.debug("Starting heat pump data retrieval")
         
         if not self.is_authenticated:
-            _LOGGER.error("🔴 Not authenticated, attempting login first")
+            _LOGGER.info("Not authenticated, attempting login first")
             await self.login()
 
-        _LOGGER.error(f"🔴 Account Module Index: {self._account_module_index}")
+        _LOGGER.debug(f"Account Module Index: {self._account_module_index}")
         if not self._account_module_index:
             # Try to re-authenticate and find the module index
-            _LOGGER.error("🔴 No account module index available, attempting re-authentication")
+            _LOGGER.warning("No account module index available, attempting re-authentication")
             self.is_authenticated = False
             await self.login()
             
             if not self._account_module_index:
-                _LOGGER.error("🔴 Could not obtain account module index after re-authentication")
+                _LOGGER.error("Could not obtain account module index after re-authentication")
                 raise EpluconConnectionError("Could not obtain account module index needed for data access. Please check your credentials and ensure you have access to the heat pump data.")
 
         session = await self._ensure_session()
@@ -215,7 +214,7 @@ class EpluconAPI:
             # Construct the graphicsdata URL with the account module index
             params = {'account_module_index': self._account_module_index}
             data_url = f"{EPLUCON_BASE_URL}{DATA_ENDPOINT}?{urlencode(params)}"
-            _LOGGER.error(f"🔴 Fetching data from: {data_url}")
+            _LOGGER.debug(f"Fetching data from: {data_url}")
             
             # Add headers that might be expected for AJAX requests
             headers = {
@@ -226,7 +225,7 @@ class EpluconAPI:
             _LOGGER.debug(f"Using headers: {headers}")
             
             async with session.get(data_url, headers=headers) as response:
-                _LOGGER.error(f"🔴 Data request response status: {response.status}")
+                _LOGGER.debug(f"Data request response status: {response.status}")
                 _LOGGER.debug(f"Data response headers: {dict(response.headers)}")
                 
                 if response.status == 401 or response.status == 403:
@@ -251,14 +250,14 @@ class EpluconAPI:
                     raise EpluconConnectionError(f"Failed to fetch data: {response.status}")
 
                 # Parse JSON response containing HTML
-                _LOGGER.error("🔴 Parsing response data")
+                _LOGGER.debug("Parsing response data")
                 content_type = response.headers.get('content-type', '')
-                _LOGGER.error(f"🔴 Response content type: {content_type}")
+                _LOGGER.debug(f"Response content type: {content_type}")
                 
                 try:
                     if 'application/json' in content_type:
                         json_data = await response.json()
-                        _LOGGER.error(f"🔴 JSON response keys: {list(json_data.keys())}")
+                        _LOGGER.debug(f"JSON response keys: {list(json_data.keys())}")
                         html_content = json_data.get('html', '')
                     elif 'text/html' in content_type:
                         # The endpoint returned HTML directly instead of JSON
@@ -491,15 +490,15 @@ class EpluconAPI:
     async def _find_module_index_from_heatpump_page(self, session: aiohttp.ClientSession) -> None:
         """Find the account_module_index by browsing to the heatpump page."""
         try:
-            _LOGGER.error("🔴 === Finding module index from heatpump page ===")
+            _LOGGER.debug("Finding module index from heatpump page")
             
             # Navigate directly to the heatpump page
             heatpump_url = f"{EPLUCON_BASE_URL}/e-control/heatpump"
-            _LOGGER.error(f"🔴 Loading heatpump page: {heatpump_url}")
+            _LOGGER.debug(f"Loading heatpump page: {heatpump_url}")
             
             async with session.get(heatpump_url) as response:
-                _LOGGER.error(f"🔴 Heatpump page response status: {response.status}")
-                _LOGGER.error(f"🔴 Final URL after redirects: {response.url}")
+                _LOGGER.debug(f"Heatpump page response status: {response.status}")
+                _LOGGER.debug(f"Final URL after redirects: {response.url}")
                 
                 if response.status == 200:
                     content = await response.text()
@@ -524,16 +523,16 @@ class EpluconAPI:
                         match = re.search(pattern, content)
                         if match:
                             self._account_module_index = match.group(1)
-                            _LOGGER.error(f"🟢 Found module index with pattern: {self._account_module_index}")
+                            _LOGGER.info(f"Found module index with pattern: {self._account_module_index}")
                             return
                     
-                    _LOGGER.error("🔴 No 32-character account_module_index found in heatpump page")
+                    _LOGGER.warning("No 32-character account_module_index found in heatpump page")
                     
                     # Debug: log a snippet of the page to see what's there
                     _LOGGER.debug(f"Heatpump page snippet: {content[:500]}...")
                     
                 else:
-                    _LOGGER.error(f"🔴 Failed to load heatpump page: HTTP {response.status}")
+                    _LOGGER.warning(f"Failed to load heatpump page: HTTP {response.status}")
                     
         except Exception as e:
             _LOGGER.error(f"Error finding module index from heatpump page: {e}")

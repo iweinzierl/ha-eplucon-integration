@@ -61,9 +61,12 @@ class EpluconSensor(CoordinatorEntity, SensorEntity):
         self._config_entry = config_entry
         
         # Set up entity attributes
-        self._attr_name = config["name"]
+        self._attr_name = config["name"]  # Keep original friendly name
         self._attr_unique_id = f"{config_entry.entry_id}_{sensor_type}"
         self._attr_icon = config["icon"]
+        
+        # Set entity_id with eplucon prefix for the actual entity ID
+        self.entity_id = f"sensor.eplucon_{sensor_type}"
         
         # Set up device class and unit
         if config.get("device_class"):
