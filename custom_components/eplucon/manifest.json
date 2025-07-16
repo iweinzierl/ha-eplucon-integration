@@ -4,10 +4,10 @@
   "codeowners": ["@iweinzierl"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/iweinzierl/ha-eplucon-addon",
+  "documentation": "https://github.com/iweinzierl/ha-eplucon-integration",
   "integration_type": "service",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/iweinzierl/ha-eplucon-addon/issues",
+  "issue_tracker": "https://github.com/iweinzierl/ha-eplucon-integration/issues",
   "requirements": [
     "aiohttp>=3.8.0",
     "beautifulsoup4>=4.11.0"

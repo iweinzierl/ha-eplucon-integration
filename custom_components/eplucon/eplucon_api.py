@@ -20,9 +20,7 @@ class EpluconAuthError(Exception):
 
 
 class EpluconConnectionError(Exception):
-    """Exception to indicate conn                        _LOGGER.info(f"Found 32-char hex patterns: {hex_32_patterns}")
-                        self._account_module_index = hex_32_patterns[0]
-                        _LOGGER.info(f"Using account_module_index: {self._account_module_index}")ion failure."""
+    """Exception to indicate connection failure."""
 
 
 class EpluconAPI:
@@ -502,14 +500,14 @@ class EpluconAPI:
                 
                 if response.status == 200:
                     content = await response.text()
-                    _LOGGER.error(f"🔴 Heatpump page content length: {len(content)} characters")
+                    _LOGGER.debug(f"Heatpump page content length: {len(content)} characters")
                     
                     # Search for 32-character hex strings (account_module_index format)
                     hex_32_patterns = re.findall(r'\b([a-f0-9]{32})\b', content)
                     if hex_32_patterns:
-                        _LOGGER.error(f"🟢 Found 32-char hex patterns: {hex_32_patterns}")
+                        _LOGGER.info(f"Found 32-char hex patterns: {hex_32_patterns}")
                         self._account_module_index = hex_32_patterns[0]
-                        _LOGGER.error(f"� Using account_module_index: {self._account_module_index}")
+                        _LOGGER.info(f"Using account_module_index: {self._account_module_index}")
                         return
                     
                     # If no 32-char patterns, look for the specific account_module_index parameter
