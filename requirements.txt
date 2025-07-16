@@ -1,0 +1,13 @@
+# Core dependencies for the Eplucon integration
+aiohttp>=3.8.0
+beautifulsoup4>=4.11.0
+
+# Basic development dependencies (without full Home Assistant)
+voluptuous>=0.13.0
+
+# Testing dependencies (optional - install separately if needed)
+# pytest>=7.0.0
+# pytest-asyncio>=0.21.0
+
+# Note: For full testing with Home Assistant, install in a Home Assistant development environment
+# The integration will be tested by installing it directly in Home Assistant

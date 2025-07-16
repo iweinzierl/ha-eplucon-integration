@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configure Eplucon Heat Pump",
+        "description": "Enter your Eplucon account credentials and scan interval",
+        "data": {
+          "email": "Email Address",
+          "password": "Password",
+          "scan_interval": "Scan Interval (minutes)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to Eplucon website",
+      "invalid_auth": "Invalid email or password",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "Device is already configured"
+    }
+  }
+}

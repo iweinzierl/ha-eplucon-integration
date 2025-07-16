@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Eplucon Wärmepumpe konfigurieren",
+        "description": "Geben Sie Ihre Eplucon-Kontodaten und das Scan-Intervall ein",
+        "data": {
+          "email": "E-Mail-Adresse",
+          "password": "Passwort",
+          "scan_interval": "Scan-Intervall (Minuten)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbindung zur Eplucon-Website fehlgeschlagen",
+      "invalid_auth": "Ungültige E-Mail oder Passwort",
+      "unknown": "Unerwarteter Fehler aufgetreten"
+    },
+    "abort": {
+      "already_configured": "Gerät ist bereits konfiguriert"
+    }
+  }
+}
